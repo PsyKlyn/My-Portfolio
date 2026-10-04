@@ -50,7 +50,7 @@ const DRAFT_BACKUP_KEY = "sardhon-writeup-editor-v2-backup";
 const ATTACK_LOGO_BASE = "assets/writeup-logos/attack-chain/";
 const DEFAULT_LOGO_BASE = "assets/writeup-logos/defaults/";
 const ATTACK_IMAGE_MAP = {SQLINJECTION:"SQL.PNG",IDOR:"IDOR.PNG",XSS:"XSS.PNG",CSRF:"CSRF.PNG",SSRF:"SSRF.PNG",RCE:"RCE.PNG",LFI:"LFI.PNG",RFI:"RFI.PNG",PATHTRAVERSAL:"PATHTRAVERSAL.PNG",COMMANDINJECTION:"COMMANDINJECTION.PNG",BROKENAUTHENTICATION:"BROKENAUTHENTICATION.PNG",BROKENACCESSCONTROL:"BROKENACCESSCONTROL.PNG",SENSITIVEINFOEXPOSURE:"SENSITIVEINFOEXPOSURE.PNG",SECURITYMISCONFIGURATION:"SECURITYMISCONFIGURATION.PNG",INSECUREDESIGN:"INSECUREDESIGN.PNG"};
-const DEFAULT_LOGOS = [1,2].map(n => `${DEFAULT_LOGO_BASE}DEFAULT_${n}.PNG`);
+const DEFAULT_LOGOS = [1,2,3,4,5].map(n => `${DEFAULT_LOGO_BASE}DEFAULT_${n}.PNG`);
 let saveTimer;
 
 function today(){
@@ -1675,12 +1675,48 @@ async function publishWriteup(){
 
 function normalizeAttackType(value){return String(value||"").trim().toUpperCase().replace(/[^A-Z0-9]+/g,"");}
 function firstAttackType(){return String(fields.attackType?.value||"").split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean)[0]||"";}
-function selectAutomaticWriteupLogo(){
+async function selectAutomaticWriteupLogo(){
   const first=normalizeAttackType(firstAttackType());
   const matched=ATTACK_IMAGE_MAP[first];
-  if(matched){writeupLogoDataUrl=ATTACK_LOGO_BASE+matched;writeupLogoName=matched;if(logoFileName)logoFileName.textContent=`Auto: ${matched}`;return {type:"attack",name:matched};}
-  const fallback=DEFAULT_LOGOS[Math.floor(Math.random()*DEFAULT_LOGOS.length)];
-  writeupLogoDataUrl=fallback;writeupLogoName=fallback.split("/").pop()||"default";if(logoFileName)logoFileName.textContent=`Auto: ${writeupLogoName}`;return {type:"default",name:writeupLogoName};
+  if(matched){
+    writeupLogoDataUrl=ATTACK_LOGO_BASE+matched;
+    writeupLogoName=matched;
+    if(logoFileName)logoFileName.textContent=`Auto: ${matched}`;
+    return {type:"attack",name:matched};
+  }
+
+  // Default artwork is assigned in sequence instead of randomly. Count the
+  // already-published entries that use a default cover, then pick the next
+  // DEFAULT_N image. Custom logos and attack-chain artwork do not consume a
+  // default-cover slot.
+  let published=[];
+  try{
+    const response=await fetch('/api/writeups',{credentials:'same-origin',cache:'no-store'});
+    if(response.ok){
+      const data=await response.json();
+      if(Array.isArray(data)) published=data;
+    }
+  }catch(_){
+    try{published=getPublished();}catch(__){published=[];}
+  }
+  if(!published.length){
+    try{
+      const local=getPublished();
+      if(Array.isArray(local)) published=local;
+    }catch(_){}
+  }
+
+  const defaultPattern=/assets\/writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i;
+  const defaultCount=published.filter(item=>{
+    const logo=String(item?.logo||'').trim();
+    const attack=normalizeAttackType(item?.attackType||'');
+    return !attack && (!logo || defaultPattern.test(logo));
+  }).length;
+  const fallback=DEFAULT_LOGOS[defaultCount % DEFAULT_LOGOS.length];
+  writeupLogoDataUrl=fallback;
+  writeupLogoName=fallback.split('/').pop()||'default';
+  if(logoFileName)logoFileName.textContent=`Auto: ${writeupLogoName}`;
+  return {type:'default',name:writeupLogoName};
 }
 
 async function publishWriteupNow(){
@@ -2116,7 +2152,7 @@ logoInput?.addEventListener("change",async e=>{
     if(fromPrompt) await publishWriteupNow();
   }
 });
-logoPromptProceed?.addEventListener("click",async()=>{ hideLogoPrompt(); selectAutomaticWriteupLogo(); await publishWriteupNow(); });
+logoPromptProceed?.addEventListener("click",async()=>{ hideLogoPrompt(); await selectAutomaticWriteupLogo(); await publishWriteupNow(); });
 logoPromptUpload?.addEventListener("click",()=>{ if(logoInput){ logoInput.value=""; logoInput.dataset.publishAfterUpload="1"; logoInput.click(); } });
 
 screenshotInput?.addEventListener("change",e=>handleAssetSelection(e.target.files?.[0],"screenshot"));
