@@ -2076,6 +2076,18 @@ html::-webkit-scrollbar-thumb:hover {
   cursor: wait
 }
 
+.reader-edit-btn {
+  color: #bba8ff;
+  border-color: rgba(169, 140, 255, .32)
+}
+
+.reader-edit-btn:hover:not(:disabled) {
+  color: #eee8ff;
+  border-color: rgba(169, 140, 255, .68);
+  background: rgba(169, 140, 255, .10);
+  box-shadow: 0 0 14px rgba(169, 140, 255, .16)
+}
+
 @media(max-width:700px) {
   .reader-engagement {
     top: 12px;
