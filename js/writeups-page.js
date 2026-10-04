@@ -417,10 +417,40 @@ async function loadEngagement(item){
   }catch(e){console.error('engagement:',e);}
   return {views:0,likes:0,liked:false};
 }
-async function deleteSelectedWriteup(item,btn){
-  if(!IS_ADMIN || !item?.live) return;
+let pendingDeleteItem=null;
+let pendingDeleteButton=null;
+
+function openDeleteModal(item,btn){
+  if(!IS_ADMIN || !item?.live)return;
+  pendingDeleteItem=item;
+  pendingDeleteButton=btn;
+  const modal=document.getElementById('deleteModal');
+  const name=document.getElementById('deleteModalName');
+  if(!modal)return;
+  if(name)name.textContent=`“${item.title || item.slug || 'this write-up'}”`;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.classList.add('delete-modal-open');
+  requestAnimationFrame(()=>document.getElementById('deleteModalConfirm')?.focus());
+}
+
+function closeDeleteModal(){
+  const modal=document.getElementById('deleteModal');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.classList.remove('delete-modal-open');
+  pendingDeleteItem=null;
+  pendingDeleteButton=null;
+}
+
+function deleteSelectedWriteup(item,btn){
+  openDeleteModal(item,btn);
+}
+
+async function performDeleteSelectedWriteup(item,btn){
+  if(!IS_ADMIN || !item?.live)return;
   const title=item.title || item.slug || 'this write-up';
-  if(!window.confirm(`Delete “${title}”?\n\nThis removes the published write-up from the live database.`)) return;
   btn.disabled=true;
   try{
     if(!CSRF_TOKEN){
@@ -593,3 +623,32 @@ async function loadLiveWriteups(){
   if(initialItem) selectItem(initialItem,true);
 }
 loadLiveWriteups();
+
+
+const deleteModalConfirm=document.getElementById('deleteModalConfirm');
+const deleteModalCancel=document.getElementById('deleteModalCancel');
+const deleteModalClose=document.getElementById('deleteModalClose');
+const deleteModalBackdrop=document.querySelector('[data-delete-close]');
+
+deleteModalCancel?.addEventListener('click',closeDeleteModal);
+deleteModalClose?.addEventListener('click',closeDeleteModal);
+deleteModalBackdrop?.addEventListener('click',closeDeleteModal);
+
+deleteModalConfirm?.addEventListener('click',async()=>{
+  if(!pendingDeleteItem || !pendingDeleteButton)return;
+  const item=pendingDeleteItem;
+  const btn=pendingDeleteButton;
+  deleteModalConfirm.disabled=true;
+  closeDeleteModal();
+  try{
+    await performDeleteSelectedWriteup(item,btn);
+  }finally{
+    deleteModalConfirm.disabled=false;
+  }
+});
+
+document.addEventListener('keydown',(event)=>{
+  if(event.key==='Escape' && document.getElementById('deleteModal')?.classList.contains('open')){
+    closeDeleteModal();
+  }
+});
