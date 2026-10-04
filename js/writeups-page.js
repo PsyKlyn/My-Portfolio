@@ -380,6 +380,17 @@ function renderEngagement(item, stats={views:0,likes:0,liked:false}){
   views.innerHTML=`<i class="fa-regular fa-eye"></i><span class="engagement-count">${Number(stats.views||0)}</span>`;
   wrap.append(like,views);
   if(IS_ADMIN){
+    const edit=document.createElement('button');
+    edit.id='readerEditBtn';
+    edit.className='reader-engagement-btn reader-edit-btn';
+    edit.type='button';
+    edit.innerHTML='<i class="fa-solid fa-pen-to-square"></i><span>Edit</span>';
+    edit.title=`Edit ${item.title||'write-up'}`;
+    edit.addEventListener('click',()=>{
+      window.location.href=`editor.html?edit=${encodeURIComponent(item.slug)}`;
+    });
+    wrap.appendChild(edit);
+
     const del=document.createElement('button');del.id='readerDeleteBtn';del.className='reader-engagement-btn reader-delete-btn';del.type='button';
     del.innerHTML='<i class="fa-solid fa-trash-can"></i><span>Delete</span>';del.title=`Delete ${item.title||'write-up'}`;
     del.addEventListener('click',()=>deleteSelectedWriteup(item,del));wrap.appendChild(del);
