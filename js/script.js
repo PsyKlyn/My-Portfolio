@@ -72,9 +72,16 @@ function firstHomeAttackType(item){
 }
 function resolveHomeWriteupLogo(item,index=0){
   const explicit=String(item?.logo||"").trim();
-  if(explicit) return explicit;
+  const explicitDefault=/(^|\/)assets\/writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i.test(explicit) || /(^|\/)writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i.test(explicit) || /(^|\/)DEFAULT_[1-5]\.PNG$/i.test(explicit);
+
+  // Uploaded/custom logos always win. Old automatically-assigned DEFAULT_N
+  // paths are ignored here so older write-ups can be repaired by the
+  // deterministic sequence below instead of all reusing the same image.
+  if(explicit && !explicitDefault) return explicit;
+
   const attack=HOME_ATTACK_IMAGE_MAP[normalizeHomeAttack(firstHomeAttackType(item))];
   if(attack) return `${HOME_ATTACK_LOGO_BASE}${attack}`;
+
   return HOME_DEFAULT_LOGOS[index % HOME_DEFAULT_LOGOS.length];
 }
 
@@ -127,6 +134,9 @@ function renderWriteups() {
   const catalogue = allWriteups();
   grid.innerHTML = list.map((w, index) => {
     const stableIndex = catalogue.findIndex(item => String(item.slug || "") === String(w.slug || ""));
+    // Use the write-up's stable catalogue position for deterministic DEFAULT_N
+    // artwork. This also repairs older entries whose saved logo points to the
+    // same default image.
     const logo = resolveHomeWriteupLogo(w, stableIndex >= 0 ? stableIndex : index);
     const visual = logo
       ? `<div class="writeup-card-visual"><img src="${logo}" alt="${w.title || "Write-up"} logo" loading="lazy" onerror="this.closest('.writeup-card-visual')?.classList.add('logo-failed');this.remove()"></div>`
