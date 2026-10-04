@@ -94,10 +94,8 @@ function renderFilters() {
   }));
 }
 function cardHtml(item,index) {
-  const logo=resolvePageWriteupLogo(item,index);
   return `<button class="writeup-card" type="button" data-slug="${escapeHtml(item.slug)}">
     <span class="category">${escapeHtml(item.category || "SECURITY")}</span>
-    <div class="writeup-card-visual"><img src="${escapeHtml(logo)}" alt="${escapeHtml(item.title || "Write-up")} logo" loading="lazy"></div>
     <h3>${escapeHtml(item.title || "Untitled Security Write-up")}</h3>
     ${item.excerpt ? `<p>${escapeHtml(item.excerpt)}</p>` : ""}
     <time>${escapeHtml(item.date || "")}</time>
@@ -494,6 +492,29 @@ async function showReader(item) {
   const article = document.createElement("div");
   article.className = "published-body writeup";
   article.innerHTML = sourceRoot.innerHTML;
+
+  // The write-up artwork belongs inside the reader content, not in the
+  // catalogue/list cards. Use the custom logo when one exists, otherwise
+  // use the same attack/default artwork selected for the write-up.
+  const heroLogo = resolvePageWriteupLogo(item, 0);
+  if (heroLogo) {
+    const heroImage = document.createElement("img");
+    heroImage.className = "reader-writeup-image";
+    heroImage.src = heroLogo;
+    heroImage.alt = `${item.title || "Write-up"} image`;
+    heroImage.loading = "lazy";
+
+    const intro = article.querySelector(":scope > .intro, :scope > .published-intro");
+    const heading = article.querySelector(":scope > h1, :scope > .published-title");
+    if (intro) {
+      intro.insertAdjacentElement("afterend", heroImage);
+    } else if (heading) {
+      heading.insertAdjacentElement("afterend", heroImage);
+    } else {
+      article.prepend(heroImage);
+    }
+  }
+
   readerBody.appendChild(article);
   bindCopyButtons(article);
   const engagement=await loadEngagement(item);
