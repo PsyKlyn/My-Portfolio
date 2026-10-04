@@ -427,10 +427,11 @@
 
 .reader-body .published-body.writeup .reader-writeup-image {
   display: block;
-  width: 100%;
-  max-width: 920px;
+  width: auto;
+  max-width: 380px;
+  max-height: 320px;
   height: auto;
-  margin: 26px 0 34px;
+  margin: 26px auto 34px;
   border: 0;
   border-radius: 18px;
   box-shadow: none;
@@ -498,7 +499,9 @@
 @media(max-width:560px) {
   .reader-body .published-body.writeup .reader-writeup-image {
     border-radius: 14px;
-    margin: 20px 0 28px;
+    max-width: 300px;
+    max-height: 260px;
+    margin: 20px auto 28px;
   }
 
   .reader-list {
