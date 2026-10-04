@@ -40,7 +40,7 @@ function normalizePageAttack(value){return String(value||"").trim().toUpperCase(
 function firstPageAttackType(item){const explicit=String(item?.attackType||"").split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean)[0];if(explicit)return explicit;const hay=`${item?.title||""} ${item?.category||""} ${(item?.tags||[]).join(" ")} ${item?.excerpt||""}`.toUpperCase();if(/\bSQL\s*INJECTION\b/.test(hay))return "SQLINJECTION";if(/\bIDOR\b/.test(hay))return "IDOR";return "";}
 function resolvePageWriteupLogo(item,index=0){
   const explicit=String(item?.logo||"").trim();
-  const explicitDefault=/assets\/writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i.test(explicit);
+  const explicitDefault=/(^|\/)assets\/writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i.test(explicit) || /(^|\/)writeup-logos\/defaults\/DEFAULT_[1-5]\.PNG$/i.test(explicit) || /(^|\/)DEFAULT_[1-5]\.PNG$/i.test(explicit);
   if(explicit && !explicitDefault) return explicit;
   const attack=PAGE_ATTACK_IMAGE_MAP[normalizePageAttack(firstPageAttackType(item))];
   if(attack) return `${PAGE_ATTACK_LOGO_BASE}${attack}`;
