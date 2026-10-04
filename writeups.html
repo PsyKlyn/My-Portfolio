@@ -58,6 +58,22 @@
   </section>
 </main>
 <footer><span>© <span id="year"></span> Sardhon Kramsa</span><span>Cybersecurity · Penetration Testing · Web Security</span></footer>
+  <div id="deleteModal" class="delete-modal" aria-hidden="true">
+    <div class="delete-modal-backdrop" data-delete-close></div>
+    <div class="delete-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+      <button type="button" class="delete-modal-close" id="deleteModalClose" aria-label="Close delete dialog">×</button>
+      <div class="delete-modal-icon" aria-hidden="true"><i class="fa-solid fa-trash-can"></i></div>
+      <div class="delete-modal-kicker">DELETE WRITE-UP</div>
+      <h3 id="deleteModalTitle">Delete this write-up?</h3>
+      <p class="delete-modal-message">Are you sure you want to delete <strong id="deleteModalName"></strong>?</p>
+      <p class="delete-modal-warning">This will permanently remove the published write-up from the live database.</p>
+      <div class="delete-modal-actions">
+        <button type="button" class="delete-modal-cancel" id="deleteModalCancel">Cancel</button>
+        <button type="button" class="delete-modal-confirm" id="deleteModalConfirm"><i class="fa-solid fa-trash-can"></i><span>Delete</span></button>
+      </div>
+    </div>
+  </div>
+
 <script src="js/writeups.js"></script>
 <script src="js/writeup-content.js"></script>
 <script src="js/writeups-page.js"></script>
