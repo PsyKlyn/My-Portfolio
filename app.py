@@ -138,6 +138,15 @@ def get_writeup(slug):
     if not row: return jsonify({'error':'not_found'}),404
     d=dict(row); d['tags']=json.loads(d['tags']) if isinstance(d['tags'],str) else (d['tags'] or []); d['attackType']=d.pop('attack_type','') or ''; return jsonify(d)
 
+@app.get('/api/writeups/<slug>/edit')
+@admin_required
+def get_writeup_for_edit(slug):
+    # Editing is intentionally admin-only. Return the original stored Markdown
+    # so BLOCK:type:UUID markers survive the round trip unchanged.
+    row=query_one(('SELECT slug,title,category,date,excerpt,tags,logo,attack_type,markdown,content_html FROM writeups WHERE slug=? AND published=1' if not DB_URL else 'SELECT slug,title,category,date,excerpt,tags,logo,attack_type,markdown,content_html FROM writeups WHERE slug=%s AND published=TRUE'),(slug,))
+    if not row: return jsonify({'error':'not_found'}),404
+    d=dict(row); d['tags']=json.loads(d['tags']) if isinstance(d['tags'],str) else (d['tags'] or []); d['attackType']=d.pop('attack_type','') or ''; return jsonify(d)
+
 def engagement_cookie_name(kind, slug):
     safe = re.sub(r'[^a-zA-Z0-9_-]+', '_', str(slug))[:80]
     return f'rw_{kind}_{safe}'
