@@ -96,11 +96,10 @@ function renderFilters() {
 function cardHtml(item,index) {
   const logo=resolvePageWriteupLogo(item,index);
   return `<button class="writeup-card" type="button" data-slug="${escapeHtml(item.slug)}">
-    <div class="writeup-card-visual"><img src="${escapeHtml(logo)}" alt="${escapeHtml(item.title || "Write-up")} logo" loading="lazy"></div>
     <span class="category">${escapeHtml(item.category || "SECURITY")}</span>
+    <div class="writeup-card-visual"><img src="${escapeHtml(logo)}" alt="${escapeHtml(item.title || "Write-up")} logo" loading="lazy"></div>
     <h3>${escapeHtml(item.title || "Untitled Security Write-up")}</h3>
     ${item.excerpt ? `<p>${escapeHtml(item.excerpt)}</p>` : ""}
-    ${normalizeTags(item.tags).length ? `<span class="card-tags">${normalizeTags(item.tags).map(t=>`<em>${escapeHtml(t)}</em>`).join("")}</span>` : ""}
     <time>${escapeHtml(item.date || "")}</time>
     <span class="card-open"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
   </button>`;
@@ -116,7 +115,6 @@ function renderReaderList() {
   readerList.innerHTML = list.length ? list.map(item => `<button class="reader-item" type="button" data-slug="${escapeHtml(item.slug)}">
     <span class="side-category">${escapeHtml(item.category || "TRYHACKME")}</span>
     <span class="side-title">${escapeHtml(item.title || "Untitled Security Write-up")}</span>
-    ${normalizeTags(item.tags).length ? `<span class="side-tags">${normalizeTags(item.tags).map(t=>`<em>${escapeHtml(t)}</em>`).join("")}</span>` : ""}
   </button>`).join("") : `<div class="detail-empty-list">No write-ups match your search.</div>`;
   readerList.querySelectorAll(".reader-item").forEach(btn => btn.addEventListener("click", () => selectItem(btn.dataset.slug)));
 }
