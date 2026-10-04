@@ -844,6 +844,16 @@ function setCopied(button){
   },1200);
 }
 
+function undoEditor(){
+  source.focus();
+  try{
+    document.execCommand("undo");
+  }catch{}
+  autoGrowSource();
+  renderMarkdown();
+  scheduleSave();
+}
+
 function insertAtSelection(before,after="",placeholder="text"){
   const start=source.selectionStart,end=source.selectionEnd;
   const selected=source.value.slice(start,end)||placeholder;
@@ -860,10 +870,11 @@ function wrapInsertedBlock(text,type){
 }
 function insertBlockText(text,type=null){
   const pos=source.selectionStart;
+  const end=source.selectionEnd;
   const prefix=source.value&&pos>0&&!source.value.slice(0,pos).endsWith("\n")?"\n\n":"";
   const payload=type ? wrapInsertedBlock(text,type) : text;
-  source.value=source.value.slice(0,pos)+prefix+payload+source.value.slice(source.selectionEnd);
   source.focus();
+  source.setRangeText(prefix+payload,pos,end,"end");
   source.selectionStart=source.selectionEnd=pos+prefix.length+payload.length;
   autoGrowSource();
   renderMarkdown();
@@ -1106,6 +1117,8 @@ function toolbarAction(action){
   if(action==="link")return insertAtSelection("[","](https://example.com)","link text");
   if(action==="image")return openAssetPicker("screenshot");
   if(action==="finding")return insertBlockText(":::finding HIGH\n### Vulnerability Finding\nDescribe the vulnerability and evidence.\n:::");
+  if(action==="divider")return insertBlockText(snippets.divider || "---\n", "divider");
+  if(action==="undo")return undoEditor();
 }
 
 const defaultTemplates={
@@ -1687,8 +1700,13 @@ async function publishWriteupNow(){
     // Markdown, blocks and selected assets intact so the user can review,
     // continue editing, or explicitly use "Clear Draft" when they are ready.
     setPublished(btn);
-    flash(`"${entry.title || entry.slug}" published successfully.`);
+    // Persist the editor before navigation. The draft is intentionally NOT cleared,
+    // so returning to Editor restores all metadata and Markdown exactly as entered.
     scheduleSave();
+    persistDraftNow();
+    flash(`"${entry.title || entry.slug}" published successfully.`);
+    const readerUrl = result.url || `writeups.html?slug=${encodeURIComponent(entry.slug)}`;
+    setTimeout(()=>{ window.location.href = readerUrl; }, 250);
   }catch(err){
     console.error(err);
     resetPublishing(btn);
@@ -2055,6 +2073,16 @@ source.addEventListener("input",()=>{
 source.addEventListener("focus",()=>{document.documentElement.classList.add("editor-source-focused");});
 source.addEventListener("blur",()=>{document.documentElement.classList.remove("editor-source-focused");});
 source.addEventListener("keydown",e=>{
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="z"){
+    e.preventDefault();
+    undoEditor();
+    return;
+  }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="d"){
+    e.preventDefault();
+    insertBlockText(snippets.divider || "---\n", "divider");
+    return;
+  }
   if(e.key==="Tab"){
     e.preventDefault();
     const start=source.selectionStart,end=source.selectionEnd;
