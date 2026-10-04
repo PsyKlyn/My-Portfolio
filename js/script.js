@@ -20,22 +20,11 @@ function slugifyWriteup(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-const KEEP_EXISTING_WRITEUP_SLUG = "tryhackme-your-first-write-up";
-function purgeOldLocalWriteups() {
-  try {
-    const key = "sardhon-published-writeups-v1";
-    const raw = JSON.parse(localStorage.getItem(key) || "[]");
-    if (!Array.isArray(raw)) return;
-    const keep = raw.filter(w => (w.slug || w.id || slugifyWriteup(w.title)) === KEEP_EXISTING_WRITEUP_SLUG);
-    localStorage.setItem(key, JSON.stringify(keep));
-  } catch {}
-}
-purgeOldLocalWriteups();
 
 function getPublishedWriteups() {
   try {
     const items = JSON.parse(localStorage.getItem("sardhon-published-writeups-v1") || "[]");
-    return Array.isArray(items) ? items.filter(w => (w.slug || w.id || slugifyWriteup(w.title)) === KEEP_EXISTING_WRITEUP_SLUG).map(w => {
+    return Array.isArray(items) ? items.map(w => {
       const slug = w.slug || w.id || slugifyWriteup(w.title);
       return {...w, slug, url:`writeups.html?slug=${encodeURIComponent(slug)}`, published:true};
     }) : [];
@@ -94,7 +83,7 @@ function resolveHomeWriteupLogo(item){
 
 function allWriteups() {
   if(Array.isArray(LIVE_HOME_WRITEUPS)){
-    return LIVE_HOME_WRITEUPS.filter(w => (w.slug || slugifyWriteup(w.title)) === KEEP_EXISTING_WRITEUP_SLUG).map(w=>{
+    return LIVE_HOME_WRITEUPS.map(w=>{
       const slug=w.slug||slugifyWriteup(w.title);
       return {...w,slug,tags:normalizeHomeTags(w.tags),url:`writeups.html?slug=${encodeURIComponent(slug)}`};
     });
