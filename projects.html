@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sardhon Kramsa — Projects, security labs and practical work.">
+  <title>Projects | Sardhon Kramsa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/projects.css">
+</head>
+<body>
+<div class="interactive-grid" id="interactiveGrid" aria-hidden="true"></div>
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
+
+<header class="navbar island-navbar">
+  <div class="nav-island" aria-label="Primary navigation">
+    <a href="index.html" class="island-name" aria-label="Sardhon Kramsa home">SARDHON<span>.</span></a>
+    <nav class="island-icons" id="navLinks">
+      <a href="index.html#about" title="About" aria-label="About"><i class="fa-solid fa-user"></i></a>
+      <a href="projects.html" class="active" title="Projects" aria-label="Projects"><i class="fa-solid fa-folder-open"></i></a>
+      <a href="writeups.html" title="Write-ups" aria-label="Write-ups"><i class="fa-solid fa-file-code"></i></a>
+      <a href="editor.html" title="Write-up Editor" aria-label="Write-up Editor"><i class="fa-solid fa-pen-nib"></i></a>
+      <a href="index.html#certifications" title="Certifications" aria-label="Certifications"><i class="fa-solid fa-certificate"></i></a>
+      <a href="index.html#skills" title="Skills" aria-label="Skills"><i class="fa-solid fa-code"></i></a>
+      <a href="index.html#contact" title="Contact" aria-label="Contact"><i class="fa-solid fa-envelope"></i></a>
+    </nav>
+  </div>
+</header>
+
+<main class="projects-page">
+  <section class="projects-hero section">
+    <div class="projects-hero-copy">
+      <p class="eyebrow"><span class="pulse"></span> PROJECTS <i></i></p>
+      <h1>Things I've <span>Built.</span></h1>
+      <p>A collection of hands-on projects, labs and tools built to learn, experiment and solve real-world security and development problems.</p>
+      <div class="project-stats">
+        <div><strong>6+</strong><small>Projects</small></div>
+        <div><strong>4</strong><small>Categories</small></div>
+        <div><strong>10+</strong><small>Technologies</small></div>
+        <div><strong>∞</strong><small>Learning</small></div>
+      </div>
+    </div>
+    <div class="projects-terminal" aria-label="Project categories">
+      <div class="terminal-bar"><span></span><span></span><span></span><em>~/sardhon/projects.txt</em></div>
+      <pre><span class="prompt">$</span> cat projects.txt
+
+<span class="arrow">→</span> Web Security Labs
+<span class="arrow">→</span> Security Tools
+<span class="arrow">→</span> Network &amp; Enumeration
+<span class="arrow">→</span> Write-up Platform
+<span class="arrow">→</span> And more...<span class="cursor"></span></pre>
+    </div>
+  </section>
+
+  <section class="projects-browser section" aria-label="Project collection">
+    <div class="project-toolbar">
+      <div class="project-filters" role="tablist" aria-label="Filter projects">
+        <button class="filter active" data-filter="all">All Projects</button>
+        <button class="filter" data-filter="web">Web Security</button>
+        <button class="filter" data-filter="security">Security Tools</button>
+        <button class="filter" data-filter="networking">Networking</button>
+        <button class="filter" data-filter="automation">Automation</button>
+        <button class="filter" data-filter="other">Other</button>
+      </div>
+      <div class="project-tools">
+        <label class="project-search"><i class="fa-solid fa-magnifying-glass"></i><input id="projectSearch" type="search" placeholder="Search projects..." aria-label="Search projects"></label>
+        <select id="projectSort" aria-label="Sort projects">
+          <option value="latest">Latest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="az">A–Z</option>
+        </select>
+        <div class="sort-dropdown-shell" id="sortDropdown">
+          <button class="sort-dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span id="sortDropdownLabel">Latest First</span><i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="sort-dropdown-menu" role="listbox" aria-label="Sort projects">
+            <button class="sort-dropdown-option active" type="button" data-sort="latest" role="option" aria-selected="true">Latest First</button>
+            <button class="sort-dropdown-option" type="button" data-sort="oldest" role="option" aria-selected="false">Oldest First</button>
+            <button class="sort-dropdown-option" type="button" data-sort="az" role="option" aria-selected="false">A–Z</button>
+          </div>
+        </div>
+        <button class="view-toggle active" data-view="grid" aria-label="Grid view"><i class="fa-solid fa-grip"></i></button>
+        <button class="view-toggle" data-view="list" aria-label="List view"><i class="fa-solid fa-list"></i></button>
+      </div>
+    </div>
+
+    <div class="projects-grid" id="projectsGrid">
+      <article class="project-tile" data-category="web" data-date="2026-09-30" data-title="Vulnerable Web Application Security Lab">
+        <div class="tile-visual image-visual"><img src="assets/projects/vulnerable-web-app.png" alt="Vulnerable Web Application Security Lab"><span class="tile-index">01</span></div>
+        <div class="tile-body"><div class="tile-kicker">WEB SECURITY</div><h2>Vulnerable Web Application Security Lab</h2><p>A deliberately vulnerable Flask/SQLite application built for learning and demonstrating OWASP Top 10 vulnerabilities.</p><div class="tile-actions"><a class="tile-primary" href="case-study.html"><span>View Project</span> <i class="fa-solid fa-arrow-right"></i></a><a class="tile-secondary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div>
+      </article>
+
+      <article class="project-tile" data-category="security" data-date="2026-09-28" data-title="Tor IP Rotator Tool">
+        <div class="tile-visual tor-visual"><span class="tile-index">02</span><div class="visual-terminal"><b>tor_rotator.py</b><br><span>$ sudo service tor start</span><br><span>$ python3 tor_rotator.py</span><br><em>[+] Rotation successful</em></div><div class="visual-orbit"><i class="fa-solid fa-user-secret"></i></div></div>
+        <div class="tile-body"><div class="tile-kicker">SECURITY TOOL</div><h2>Tor IP Rotator Tool</h2><p>Python utility for automatically rotating IP addresses using Tor with command-line monitoring and verification.</p><div class="tile-actions"><button class="tile-primary tile-coming-soon" type="button" disabled aria-disabled="true" title="Case study coming soon">View Project <i class="fa-solid fa-arrow-right"></i></button><a class="tile-secondary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div>
+      </article>
+
+      <article class="project-tile" data-category="web" data-date="2026-09-27" data-title="SQL Injection Case Study App">
+        <div class="tile-visual sql-visual"><span class="tile-index">03</span><div class="browser-mock"><div class="browser-top"><i></i><i></i><i></i></div><div class="browser-content"><b>Search results</b><code>GET /search?q=admin</code><div class="result-row">admin &nbsp; • &nbsp; profile</div><div class="result-row">root &nbsp; • &nbsp; system</div></div></div></div>
+        <div class="tile-body"><div class="tile-kicker">WEB SECURITY</div><h2>SQL Injection Case Study App</h2><p>Demonstrates SQL injection vulnerabilities with real examples, payload analysis and mitigation techniques.</p><div class="tile-actions"><button class="tile-primary tile-coming-soon" type="button" disabled aria-disabled="true" title="Case study coming soon">View Project <i class="fa-solid fa-arrow-right"></i></button><a class="tile-secondary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div>
+      </article>
+
+      <article class="project-tile" data-category="networking" data-date="2026-09-25" data-title="Network Enumeration Lab">
+        <div class="tile-visual nmap-visual"><span class="tile-index">04</span><pre><span>$ nmap -sC -sV 10.10.10.100</span>
+22/tcp   open   ssh
+80/tcp   open   http
+3306/tcp open   mysql
+443/tcp  open   https
+
+<span class="ok">[+] enumeration complete</span></pre></div>
+        <div class="tile-body"><div class="tile-kicker">NETWORKING</div><h2>Network Enumeration Lab</h2><p>Hands-on network enumeration using Nmap, identifying open services, versions and potential attack vectors.</p><div class="tile-actions"><button class="tile-primary tile-coming-soon" type="button" disabled aria-disabled="true" title="Case study coming soon">View Project <i class="fa-solid fa-arrow-right"></i></button><a class="tile-secondary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div>
+      </article>
+
+      <article class="project-tile" data-category="security" data-date="2026-09-24" data-title="Mini SOC Dashboard">
+        <div class="tile-visual soc-visual"><img src="assets/projects/mini-soc-dashboard.png" alt="Mini SOC Dashboard"><span class="tile-index">05</span></div>
+        <div class="tile-body"><div class="tile-kicker">SECURITY MONITORING</div><h2>Mini SOC Dashboard</h2><p>A lightweight dashboard for log monitoring, threat detection and visualising security alerts and response activity.</p><div class="tile-actions"><button class="tile-primary tile-coming-soon" type="button" disabled aria-disabled="true" title="Case study coming soon">View Project <i class="fa-solid fa-arrow-right"></i></button><a class="tile-secondary" href="https://github.com/PsyKlyn/Mini-SOC-Dashboard" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div>
+      </article>
+
+      <article class="project-tile" data-category="other" data-date="2026-09-20" data-title="Personal Portfolio Website">
+        <div class="tile-visual portfolio-visual"><span class="tile-index">06</span><div class="portfolio-art"><div class="laptop"><div class="screen"><b>SARDHON</b><span>Cybersecurity Enthusiast</span></div></div><i class="fa-solid fa-code"></i></div></div>
+        <div class="tile-body"><div class="tile-kicker">WEB DEVELOPMENT</div><h2>Personal Portfolio Website</h2><p>This portfolio website, built around a dynamic write-up system and practical project showcase.</p><div class="tile-actions"><button class="tile-primary tile-coming-soon" type="button" disabled aria-disabled="true" title="Case study coming soon">View Project <i class="fa-solid fa-arrow-right"></i></button><a class="tile-secondary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></div></div></article>
+    </div>
+    <p class="projects-empty" id="projectsEmpty" hidden>No projects match your search.</p>
+  </section>
+</main>
+
+<footer class="footer"><p>© 2026 Sardhon Kramsa. Built with curiosity, code and security.</p></footer>
+<script src="js/script.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/interactive-grid.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Case study of Sardhon's Vulnerable Web Application Security Lab built with Flask and SQLite.">
+  <title>Vulnerable Web Application Security Lab | Sardhon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/case-study.css">
+</head>
+<body>
+<div class="interactive-grid" id="interactiveGrid" aria-hidden="true"></div>
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
+<main class="case-page">
+  <a class="case-back" href="projects.html"><i class="fa-solid fa-arrow-left"></i> Back to Projects</a>
+
+  <section class="case-hero" aria-labelledby="projectTitle">
+    <div class="case-intro">
+      <p class="case-kicker">WEB APPLICATION SECURITY</p>
+      <h1 id="projectTitle">Vulnerable Web Application <span>Security Lab</span></h1>
+      <p class="case-lead">I built a deliberately vulnerable Flask and SQLite web app so I could test common web security problems in a project I controlled. The goal was not only to find bugs, but also to see what those attacks look like from the application and monitoring side.</p>
+      <div class="case-actions">
+        <a class="case-primary" href="https://github.com/PsyKlyn" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>
+        <a class="case-secondary" href="#overview"><i class="fa-solid fa-arrow-down"></i> Explore Case Study</a>
+      </div>
+    </div>
+
+    <div class="case-hero-shot project-shot">
+      <img src="assets/projects/vulnerable-web-app.png" alt="Vulnerable Web Application Security Lab interface">
+    </div>
+
+    <aside class="case-meta" aria-label="Project metadata">
+      <div class="meta-row"><i class="fa-regular fa-folder-open"></i><span>Project Type<strong>Web Security Lab</strong></span></div>
+      <div class="meta-row"><i class="fa-regular fa-circle-check"></i><span>Status<strong class="status">● Completed</strong></span></div>
+      <div class="meta-row"><i class="fa-regular fa-calendar"></i><span>Started<strong>August 2026</strong></span></div>
+      <div class="meta-row"><i class="fa-solid fa-layer-group"></i><span>Technologies<strong>Python · Flask · SQLite</strong></span></div>
+      <div class="meta-row"><i class="fa-solid fa-gauge-high"></i><span>Testing<strong>Burp Suite · SQLMap · Hydra</strong></span></div>
+      <div class="meta-row"><i class="fa-solid fa-shield-halved"></i><span>Focus<strong>OWASP Web Security</strong></span></div>
+    </aside>
+  </section>
+
+  <nav class="case-tabs" aria-label="Case study sections" role="tablist">
+    <a class="active" href="#overview" role="tab" aria-selected="true">Overview</a>
+    <a href="#objectives" role="tab" aria-selected="false">Objectives</a>
+    <a href="#architecture" role="tab" aria-selected="false">Architecture</a>
+    <a href="#findings" role="tab" aria-selected="false">Vulnerabilities</a>
+    <a href="#screenshots" role="tab" aria-selected="false">Screenshots</a>
+    <a href="#learned" role="tab" aria-selected="false">What I Learned</a>
+  </nav>
+
+  <div class="case-content" id="caseContent">
+    <section class="case-view active" id="overview" data-title="Overview" role="tabpanel">
+      <div class="reading-content">
+        <span class="reading-index">01 / 06</span>
+        <h2>Why I built this lab.</h2>
+        <p class="reading-lead">I wanted one small application where I could break things on purpose, watch what happened, and then fix them.</p>
+
+        <div class="tools-used">
+          <div class="tools-used-head">
+            <div>
+              <span class="tools-kicker">TOOLS USED</span>
+              <h3>What I used to build and test the lab.</h3>
+            </div>
+            <p>Operating system, technologies and security tools used throughout the project.</p>
+          </div>
+          <div class="tools-grid">
+            <article class="tool-card">
+              <span class="tool-type">OPERATING SYSTEM</span>
+              <div class="tool-logo"><img src="https://cdn.simpleicons.org/kalilinux" alt="Kali Linux logo" loading="lazy"></div>
+              <strong>Kali Linux</strong>
+              <small>Testing environment</small>
+            </article>
+            <article class="tool-card">
+              <span class="tool-type">TECHNOLOGY</span>
+              <div class="tool-logo"><img src="https://cdn.simpleicons.org/python" alt="Python logo" loading="lazy"></div>
+              <strong>Python</strong>
+              <small>Application code</small>
+            </article>
+            <article class="tool-card">
+              <span class="tool-type">TECHNOLOGY</span>
+              <div class="tool-logo"><img src="https://cdn.simpleicons.org/flask" alt="Flask logo" loading="lazy"></div>
+              <strong>Flask</strong>
+              <small>Web framework</small>
+            </article>
+            <article class="tool-card">
+              <span class="tool-type">TECHNOLOGY</span>
+              <div class="tool-logo"><img src="https://cdn.simpleicons.org/sqlite" alt="SQLite logo" loading="lazy"></div>
+              <strong>SQLite</strong>
+              <small>Database</small>
+            </article>
+            <article class="tool-card">
+              <span class="tool-type">SECURITY TOOL</span>
+              <div class="tool-logo"><img src="assets/tool-logos/hydra-logo.svg" alt="Hydra logo"></div>
+              <strong>Hydra</strong>
+              <small>Login testing</small>
+            </article>
+            <article class="tool-card">
+              <span class="tool-type">SECURITY TOOL</span>
+              <div class="tool-logo"><img src="assets/tool-logos/burpsuite-logo.svg" alt="Burp Suite logo"></div>
+              <strong>Burp Suite</strong>
+              <small>Request testing</small>
+            </article>
+          </div>
+        </div>
+
+        <div class="reading-grid two-col">
+          <article class="reading-card"><span class="card-number">01</span><h3>A real app to test</h3><p>The lab uses Flask for the web app and SQLite for the database. It has login, registration, search, profiles and admin-related pages, so there are real requests and database actions to test.</p></article>
+          <article class="reading-card"><span class="card-number">02</span><h3>Attack and evidence</h3><p>I used Burp Suite to look at requests, Hydra to test the login, and SQLMap to test the search point. Each test was tied back to what the app was doing instead of just showing a tool result.</p></article>
+          <article class="reading-card"><span class="card-number">03</span><h3>Vulnerable and secure modes</h3><p>The project also lets me compare unsafe behaviour with safer code. This made it easier to see what changed when input checks, parameterized queries, session checks and access rules were added.</p></article>
+          <article class="reading-card"><span class="card-number">04</span><h3>Made for my own lab</h3><p>Everything was built as a controlled project for learning and testing. That gave me a safe place to repeat the same attack, change the code and test it again.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="case-view" id="objectives" data-title="Objectives" role="tabpanel" hidden>
+      <div class="reading-content">
+        <span class="reading-index">02 / 06</span>
+        <h2>What I wanted to learn.</h2>
+        <p class="reading-lead">I kept the goals simple: build the app, test it like an attacker, then understand how to make it safer.</p>
+        <div class="objective-list">
+          <div class="objective-item"><b>01</b><div><h3>Build a working vulnerable app</h3><p>Create the login, registration, search, profile and admin flow first. The security problems should exist inside a working application, not in isolated examples.</p></div></div>
+          <div class="objective-item"><b>02</b><div><h3>Test common web problems</h3><p>Practice SQL injection, broken access control, weak authentication checks and admin access issues using tools I already use in my labs.</p></div></div>
+          <div class="objective-item"><b>03</b><div><h3>Understand the request path</h3><p>Follow a request from the browser to the Flask route and then to SQLite. This helped me understand why a small coding mistake can become a security issue.</p></div></div>
+          <div class="objective-item"><b>04</b><div><h3>Connect testing with detection</h3><p>Keep useful events so the same attack can later be seen by the Mini-SOC dashboard. I wanted the offensive and defensive parts of the project to connect.</p></div></div>
+          <div class="objective-item"><b>05</b><div><h3>Test the fixes</h3><p>After changing the vulnerable code, run the same kind of test again and check whether the old behaviour is still possible.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="case-view" id="architecture" data-title="Architecture" role="tabpanel" hidden>
+      <div class="reading-content">
+        <span class="reading-index">03 / 06</span>
+        <h2>How the lab works.</h2>
+        <p class="reading-lead">The setup is small on purpose. I wanted to understand every part instead of hiding the important steps behind a large framework.</p>
+        <div class="flow-diagram">
+          <div class="flow-box"><i class="fa-solid fa-user"></i><strong>Browser / Tester</strong><span>Normal requests or attack traffic</span></div>
+          <i class="fa-solid fa-arrow-right flow-arrow"></i>
+          <div class="flow-box"><i class="fa-solid fa-server"></i><strong>Flask Routes</strong><span>Login, search, profile and admin logic</span></div>
+          <i class="fa-solid fa-arrow-right flow-arrow"></i>
+          <div class="flow-box"><i class="fa-solid fa-database"></i><strong>SQLite</strong><span>User and application data</span></div>
+        </div>
+        <div class="architecture-notes">
+          <article><h3>1. Browser to Flask</h3><p>I first used the application normally and then sent the same requests through Burp Suite. This made it easy to compare normal input with changed parameters.</p></article>
+          <article><h3>2. Flask to SQLite</h3><p>The vulnerable routes show how user input reaches the database. The secure version uses safer query handling instead of joining raw input into SQL.</p></article>
+          <article><h3>3. Events for monitoring</h3><p>Security-related actions can also create events. These events are useful later for the Mini-SOC part of the project, where they become alerts and response actions.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="case-view" id="findings" data-title="Vulnerabilities" role="tabpanel" hidden>
+      <div class="vulnerability-study">
+        <nav class="vulnerability-tabs" aria-label="Vulnerability findings" role="tablist">
+          <button class="vulnerability-tab active" type="button" role="tab" aria-selected="true" data-vulnerability="sql">
+            <i class="fa-solid fa-database"></i><span>SQL Injection</span>
+          </button>
+          <button class="vulnerability-tab" type="button" role="tab" aria-selected="false" data-vulnerability="idor">
+            <i class="fa-regular fa-file-lines"></i><span>IDOR</span>
+          </button>
+          <button class="vulnerability-tab" type="button" role="tab" aria-selected="false" data-vulnerability="brute">
+            <i class="fa-solid fa-lock"></i><span>BRUTE FORCE</span>
+          </button>
+          <button class="vulnerability-tab" type="button" role="tab" aria-selected="false" data-vulnerability="admin">
+            <i class="fa-solid fa-user-shield"></i><span>ADMIN ACCESS</span>
+          </button>
+        </nav>
+
+        <div class="vulnerability-panel-wrap">
+          <aside class="vulnerability-sidebar">
+            <span class="vulnerability-number" id="vulnerabilityNumber">VULNERABILITY 01</span>
+            <h2 id="vulnerabilityTitle">SQL Injection</h2>
+            <span class="vulnerability-severity severity-high" id="vulnerabilitySeverity"><i class="fa-solid fa-circle"></i> HIGH SEVERITY</span>
+            <div class="vulnerability-side-links" role="tablist" aria-label="Finding details">
+              <button class="side-link active" type="button" data-detail="overview"><i class="fa-regular fa-file-lines"></i><span>Overview</span></button>
+              <button class="side-link" type="button" data-detail="details"><i class="fa-solid fa-bug"></i><span>Vulnerability Details</span></button>
+              <button class="side-link" type="button" data-detail="poc"><i class="fa-solid fa-terminal"></i><span>Proof of Concept</span></button>
+              <button class="side-link" type="button" data-detail="result"><i class="fa-solid fa-chart-column"></i><span>Result</span></button>
+              <button class="side-link" type="button" data-detail="mitigation"><i class="fa-solid fa-shield-halved"></i><span>Mitigation</span></button>
+            </div>
+          </aside>
+
+          <div class="vulnerability-content">
+            <span class="vulnerability-kicker" id="vulnerabilityKicker">OVERVIEW</span>
+            <h3 id="vulnerabilityContentTitle">SQL Injection</h3>
+            <p id="vulnerabilityDescription">The application is vulnerable to SQL Injection, allowing an attacker to manipulate SQL queries by providing malicious input. This can lead to unauthorized data access, data modification, or bypassing authentication.</p>
+
+            <div class="vulnerability-info-grid">
+              <article class="vulnerability-info-card">
+                <i class="fa-solid fa-crosshairs"></i>
+                <div><span>AFFECTED ENDPOINT</span><strong id="vulnerabilityEndpoint">/search</strong></div>
+              </article>
+              <article class="vulnerability-info-card">
+                <i class="fa-solid fa-gear"></i>
+                <div><span>PARAMETER</span><strong id="vulnerabilityParameter">query</strong></div>
+              </article>
+              <article class="vulnerability-info-card">
+                <i class="fa-solid fa-database"></i>
+                <div><span>VULNERABILITY TYPE</span><strong id="vulnerabilityType">SQL Injection</strong></div>
+              </article>
+              <article class="vulnerability-info-card">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div><span>SEVERITY</span><strong id="vulnerabilitySeverityValue" class="severity-value-high">High</strong></div>
+              </article>
+            </div>
+
+            <div class="vulnerability-detail-area" id="vulnerabilityDetailArea" aria-live="polite">
+              <div class="vulnerability-detail-head-row">
+                <span class="detail-label">OVERVIEW</span>
+                <span class="vulnerability-detail-meta" id="vulnerabilityDetailMeta">Finding summary</span>
+              </div>
+              <h4 id="vulnerabilityDetailHead">Overview</h4>
+              <p id="vulnerabilityDetailText">I tested the search endpoint with custom input to see whether it was handled as normal search text or changed the database query.</p>
+              <div class="vulnerability-evidence" id="vulnerabilityEvidence"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="case-view" id="screenshots" data-title="Screenshots" role="tabpanel" hidden>
+      <div class="reading-content">
+        <span class="reading-index">05 / 06</span>
+        <h2>The lab in action.</h2>
+        <p class="reading-lead">The screenshots are kept here as a quick visual record of the application I tested.</p>
+        <figure class="case-screenshot"><img src="assets/projects/vulnerable-web-app.png" alt="Vulnerable Web Application Security Lab screenshot"><figcaption>Vulnerable Web Application Security Lab — the application used for the security tests.</figcaption></figure>
+        <div class="screenshot-notes"><span><i class="fa-solid fa-globe"></i> Flask web application</span><span><i class="fa-solid fa-database"></i> SQLite database</span><span><i class="fa-solid fa-bug"></i> Deliberately vulnerable routes</span><span><i class="fa-solid fa-shield-halved"></i> Secure mode for comparison</span></div>
+      </div>
+    </section>
+
+    <section class="case-view" id="learned" data-title="What I Learned" role="tabpanel" hidden>
+      <div class="reading-content">
+        <span class="reading-index">06 / 06</span>
+        <h2>What building the lab taught me.</h2>
+        <p class="reading-lead">The biggest part for me was understanding the full path from a request to a bug, and then from a bug to a fix.</p>
+        <div class="learning-grid">
+          <article><i class="fa-solid fa-code"></i><h3>Small code changes matter</h3><p>A small change in how a query or user ID is handled can completely change the security of a route.</p></article>
+          <article><i class="fa-solid fa-magnifying-glass"></i><h3>Tools are not the whole test</h3><p>Burp Suite, SQLMap and Hydra helped me test the app, but I still had to understand the request and explain why the result mattered.</p></article>
+          <article><i class="fa-solid fa-user-shield"></i><h3>Access checks belong on the server</h3><p>Hiding a button is not access control. The server must check the user and the requested object before returning protected data.</p></article>
+          <article><i class="fa-solid fa-chart-line"></i><h3>Testing should lead to a fix</h3><p>I learned more when I repeated the same test after fixing the code. It showed me whether the change actually solved the problem.</p></article>
+          <article><i class="fa-solid fa-link"></i><h3>Offense and defense can connect</h3><p>The lab became more useful when the same actions could create events for the Mini-SOC. That gave the project a clear attack-to-detection flow.</p></article>
+          <article><i class="fa-solid fa-flask"></i><h3>Building the lab made the concepts clearer</h3><p>Instead of only reading about vulnerabilities, I could create them, test them, break the request, fix the code and test again.</p></article>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="js/script.js"></script>
+<script src="js/case-study.js"></script>
+<script src="js/interactive-grid.js"></script>
+</body>
+</html>
