@@ -1682,8 +1682,13 @@ async function publishWriteupNow(){
     const index=published.findIndex(x=>x.slug===entry.slug);
     if(index>=0) published[index]=entry; else published.unshift(entry);
     localStorage.setItem(PUBLISHED_KEY,JSON.stringify(published));
-    await clearDraft();
-    window.location.href="/writeups.html?slug="+encodeURIComponent(entry.slug);
+
+    // Publishing does not clear the editor anymore. Keep all metadata,
+    // Markdown, blocks and selected assets intact so the user can review,
+    // continue editing, or explicitly use "Clear Draft" when they are ready.
+    setPublished(btn);
+    flash(`"${entry.title || entry.slug}" published successfully.`);
+    scheduleSave();
   }catch(err){
     console.error(err);
     resetPublishing(btn);
@@ -1717,6 +1722,7 @@ function resetPublishing(button){
 
 function setPublished(button){
   if(!button)return;
+  button.disabled=false;
   button.classList.add("copied");
   const icon=button.querySelector("i");
   const label=button.querySelector("span");
