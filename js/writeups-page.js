@@ -14,23 +14,6 @@ let LIVE_LOADED = false;
 let IS_ADMIN = false;
 let CSRF_TOKEN = "";
 
-const KEEP_EXISTING_WRITEUP_SLUG = "tryhackme-your-first-write-up";
-function purgeOldLocalWriteups() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(PUBLISHED_KEY) || "[]");
-    if (!Array.isArray(raw)) return;
-    const keep = raw.filter(w => (w.slug || w.id || slugify(w.title)) === KEEP_EXISTING_WRITEUP_SLUG);
-    localStorage.setItem(PUBLISHED_KEY, JSON.stringify(keep));
-  } catch {}
-}
-
-function slugify(value) {
-  return String(value || "").toLowerCase().trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-purgeOldLocalWriteups();
 
 function normalizeTags(tags) {
   const raw = Array.isArray(tags) ? tags : String(tags || "").split(",");
@@ -66,7 +49,7 @@ function resolvePageWriteupLogo(item,index=0){
 function publishedItems() {
   try {
     const raw = JSON.parse(localStorage.getItem(PUBLISHED_KEY) || "[]");
-    return Array.isArray(raw) ? raw.filter(w => (w.slug || w.id || slugify(w.title)) === KEEP_EXISTING_WRITEUP_SLUG).map(w => ({ ...w, slug: w.slug || w.id || slugify(w.title) })) : [];
+    return Array.isArray(raw) ? raw.map(w => ({ ...w, slug: w.slug || w.id || slugify(w.title) })) : [];
   } catch { return []; }
 }
 function allItems() {
@@ -74,7 +57,7 @@ function allItems() {
   // This prevents stale localStorage entries from changing tags or resurrecting
   // a write-up that was deleted from the live database.
   if (LIVE_LOADED) {
-    return LIVE_ITEMS.filter(item => (item.slug || slugify(item.title)) === KEEP_EXISTING_WRITEUP_SLUG).map(item => {
+    return LIVE_ITEMS.map(item => {
       const slug = item.slug || slugify(item.title);
       return { ...item, slug, tags: normalizeTags(item.tags), live: true,
         url: item.url || `/writeups.html?slug=${encodeURIComponent(slug)}` };
