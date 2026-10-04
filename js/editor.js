@@ -45,6 +45,8 @@ const LEGACY_KEY = "sardhonWriteup";
 const PUBLISHED_KEY = "sardhon-published-writeups-v1";
 const DRAFT_SAVED_AT_KEY = "sardhon-writeup-editor-v2-saved-at";
 const DRAFT_BACKUP_KEY = "sardhon-writeup-editor-v2-backup";
+const EDIT_SLUG = new URLSearchParams(window.location.search).get('edit') || '';
+let EDIT_MODE = Boolean(EDIT_SLUG);
 
 // Automatic artwork is selected only when the author chooses Proceed in the no-logo prompt.
 const ATTACK_LOGO_BASE = "assets/writeup-logos/attack-chain/";
@@ -1431,7 +1433,9 @@ function insertSecurityBlock(type){
 
 function getPublishEntry(){
   const title=fields.title.value.trim()||"Untitled Security Write-up";
-  const slug=slugify(title)||"writeup";
+  // In edit mode keep the original slug so the existing database row and its
+  // permanent likes/views remain attached to the same write-up.
+  const slug=EDIT_SLUG || slugify(title)||"writeup";
   const category=fields.category.value.trim()||"SECURITY";
   const date=fields.date.value||today();
   const excerpt=fields.excerpt.value.trim();
@@ -1754,6 +1758,17 @@ async function publishWriteupNow(){
   }
 }
 
+function setEditorModeUI(){
+  const btn="#publishBtn";
+  const button=$(btn);
+  if(!button) return;
+  button.title=EDIT_MODE ? "Update write-up" : "Publish write-up";
+  const icon=button.querySelector('i');
+  const label=button.querySelector('span');
+  if(icon) icon.className=EDIT_MODE ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-cloud-arrow-up';
+  if(label) label.textContent=EDIT_MODE ? 'Update Write-up' : 'Publish Write-up';
+}
+
 function setPublishing(button){
   if(!button)return;
   button.disabled=true;
@@ -1770,8 +1785,8 @@ function resetPublishing(button){
   button.classList.remove("publishing");
   const icon=button.querySelector("i");
   const label=button.querySelector("span");
-  if(icon) icon.className="fa-solid fa-cloud-arrow-up";
-  if(label) label.textContent="Publish Write-up";
+  if(icon) icon.className=EDIT_MODE ? "fa-solid fa-pen-to-square" : "fa-solid fa-cloud-arrow-up";
+  if(label) label.textContent=EDIT_MODE ? "Update Write-up" : "Publish Write-up";
 }
 
 function setPublished(button){
@@ -1785,8 +1800,8 @@ function setPublished(button){
   clearTimeout(button._publishTimer);
   button._publishTimer=setTimeout(()=>{
     button.classList.remove("copied");
-    if(icon) icon.className="fa-solid fa-cloud-arrow-up";
-    if(label) label.textContent="Publish Write-up";
+    if(icon) icon.className=EDIT_MODE ? "fa-solid fa-pen-to-square" : "fa-solid fa-cloud-arrow-up";
+    if(label) label.textContent=EDIT_MODE ? "Update Write-up" : "Publish Write-up";
   },1600);
 }
 
@@ -2214,6 +2229,9 @@ blocks.forEach(([icon,label,type],index)=>{
 
 
 function startNewWriteup(template="blank"){
+  EDIT_MODE=false;
+  if(window.history.replaceState) window.history.replaceState({},"",window.location.pathname);
+  setEditorModeUI();
   fields.title.value="";
   fields.category.value="TRYHACKME";
   fields.date.value=today();
@@ -2265,6 +2283,43 @@ $$("[data-template],[data-new-template]").forEach(btn=>{
 // storage once so the retired feature cannot consume editor space or data.
 localStorage.removeItem(SAVED_BLOCKS_KEY);
 
+async function loadWriteupForEdit(slug){
+  try{
+    const me=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
+    const auth=me.ok ? await me.json() : {authenticated:false};
+    if(!auth.authenticated){
+      window.location.href='/admin/login';
+      return;
+    }
+    const response=await fetch(`/api/writeups/${encodeURIComponent(slug)}/edit`,{credentials:'same-origin',cache:'no-store'});
+    const data=await response.json().catch(()=>({}));
+    if(response.status===401){
+      window.location.href='/admin/login';
+      return;
+    }
+    if(!response.ok) throw new Error(data.error || 'Could not load this write-up.');
+
+    // Load the exact stored Markdown. BLOCK:type:UUID markers are intentionally
+    // preserved so existing blocks keep their identity when the write-up is updated.
+    applyState({
+      title:data.title || '',
+      category:data.category || '',
+      date:data.date || '',
+      excerpt:data.excerpt || '',
+      tags:Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || ''),
+      attackType:data.attackType || '',
+      logo:data.logo || '',
+      logoName:data.logo ? String(data.logo).split('/').pop() : '',
+      source:data.markdown || ''
+    });
+    setEditorModeUI();
+    flash(`Loaded “${data.title || slug}” for editing.`);
+  }catch(err){
+    console.error(err);
+    flash(err?.message || 'Could not load the write-up.');
+  }
+}
+
 const legacy=localStorage.getItem(LEGACY_KEY);
 const saved=localStorage.getItem(STORAGE_KEY);
 const backup=localStorage.getItem(DRAFT_BACKUP_KEY);
@@ -2280,13 +2335,18 @@ try{
   restoredDraft=JSON.stringify(withBody || first || {});
 }catch{}
 
-if(restoredDraft){
+if(EDIT_SLUG){
+  // Edit mode is authoritative: never let an unrelated local draft overwrite
+  // the write-up being edited. The server response loads the exact Markdown.
+  setEditorModeUI();
+  loadWriteupForEdit(EDIT_SLUG);
+}else if(restoredDraft){
   try{applyState(JSON.parse(restoredDraft));}
   catch{applyState({});}
 }else if(legacy){
   try{
     const x=JSON.parse(legacy);
-    applyState({source:x.source,title:x.title,category:x.tag,date:x.date});
+    applyState({source:x.source,title:x.title,category:x.category,date:x.date});
   }catch{applyState({});}
 }else{
   applyState({
