@@ -498,10 +498,11 @@
 
 @media(max-width:560px) {
   .reader-body .published-body.writeup .reader-writeup-image {
+    width: 70%;
+    max-width: 210px;
+    max-height: 190px;
     border-radius: 14px;
-    max-width: 300px;
-    max-height: 260px;
-    margin: 20px auto 28px;
+    margin: 16px 0 24px;
   }
 
   .reader-list {
