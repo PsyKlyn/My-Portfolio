@@ -1,7 +1,7 @@
 import os, json, re, secrets
 from datetime import datetime, timezone
 from functools import wraps
-from flask import Flask, request, jsonify, session, redirect, send_from_directory, abort, render_template_string
+from flask import Flask, request, jsonify, session, redirect, send_from_directory, abort, render_template_string, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 import pyotp
 import psycopg2
@@ -36,6 +36,22 @@ def init_db():
     else:
         cur.execute('''CREATE TABLE IF NOT EXISTS admins (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, totp_secret TEXT NOT NULL, created_at TEXT NOT NULL)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS writeups (id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT UNIQUE NOT NULL, title TEXT NOT NULL, category TEXT NOT NULL, date TEXT NOT NULL, excerpt TEXT, tags TEXT NOT NULL DEFAULT '[]', logo TEXT, attack_type TEXT NOT NULL DEFAULT '', markdown TEXT NOT NULL, content_html TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)''')
+    # Persistent write-up engagement counters.
+    if DB_URL:
+        cur.execute("""CREATE TABLE IF NOT EXISTS writeup_engagement (
+            slug TEXT PRIMARY KEY,
+            views INTEGER NOT NULL DEFAULT 0,
+            likes INTEGER NOT NULL DEFAULT 0,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )""")
+    else:
+        cur.execute("""CREATE TABLE IF NOT EXISTS writeup_engagement (
+            slug TEXT PRIMARY KEY,
+            views INTEGER NOT NULL DEFAULT 0,
+            likes INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL
+        )""")
+
     # Backward-compatible migrations for optional write-up logos and attack metadata.
     if DB_URL:
         cur.execute('ALTER TABLE writeups ADD COLUMN IF NOT EXISTS logo TEXT')
@@ -122,6 +138,70 @@ def get_writeup(slug):
     if not row: return jsonify({'error':'not_found'}),404
     d=dict(row); d['tags']=json.loads(d['tags']) if isinstance(d['tags'],str) else (d['tags'] or []); d['attackType']=d.pop('attack_type','') or ''; return jsonify(d)
 
+def engagement_cookie_name(kind, slug):
+    safe = re.sub(r'[^a-zA-Z0-9_-]+', '_', str(slug))[:80]
+    return f'rw_{kind}_{safe}'
+
+def engagement_row(slug):
+    return query_one(
+        ('SELECT views,likes FROM writeup_engagement WHERE slug=?'
+         if not DB_URL else
+         'SELECT views,likes FROM writeup_engagement WHERE slug=%s'),
+        (slug,))
+
+@app.get('/api/writeups/<slug>/engagement')
+def get_engagement(slug):
+    exists=query_one(('SELECT slug FROM writeups WHERE slug=? AND published=1' if not DB_URL else 'SELECT slug FROM writeups WHERE slug=%s AND published=TRUE'),(slug,))
+    if not exists:return jsonify({'error':'not_found'}),404
+    row=engagement_row(slug)
+    return jsonify({'views':int(row['views']) if row else 0,'likes':int(row['likes']) if row else 0,'liked':request.cookies.get(engagement_cookie_name('liked',slug))=='1'})
+
+@app.post('/api/writeups/<slug>/view')
+def record_view(slug):
+    exists=query_one(('SELECT slug FROM writeups WHERE slug=? AND published=1' if not DB_URL else 'SELECT slug FROM writeups WHERE slug=%s AND published=TRUE'),(slug,))
+    if not exists:return jsonify({'error':'not_found'}),404
+    cookie_name=engagement_cookie_name('viewed',slug)
+    if request.cookies.get(cookie_name)=='1':
+        row=engagement_row(slug)
+        return jsonify({'views':int(row['views']) if row else 0,'likes':int(row['likes']) if row else 0,'counted':False})
+    now=datetime.now(timezone.utc).isoformat()
+    if DB_URL:
+        sql="""INSERT INTO writeup_engagement(slug,views,likes,updated_at)
+                VALUES(%s,1,0,%s)
+                ON CONFLICT(slug) DO UPDATE
+                SET views=writeup_engagement.views+1,updated_at=EXCLUDED.updated_at"""
+        execute(sql,(slug,now))
+    else:
+        execute("INSERT OR IGNORE INTO writeup_engagement(slug,views,likes,updated_at) VALUES(?,?,?,?)",(slug,0,0,now))
+        execute("UPDATE writeup_engagement SET views=views+1,updated_at=? WHERE slug=?",(now,slug))
+    row=engagement_row(slug)
+    response=make_response(jsonify({'views':int(row['views']),'likes':int(row['likes']),'counted':True}))
+    response.set_cookie(cookie_name,'1',max_age=2592000,httponly=True,samesite='Lax',secure=app.config.get('SESSION_COOKIE_SECURE',False))
+    return response
+
+@app.post('/api/writeups/<slug>/like')
+def record_like(slug):
+    exists=query_one(('SELECT slug FROM writeups WHERE slug=? AND published=1' if not DB_URL else 'SELECT slug FROM writeups WHERE slug=%s AND published=TRUE'),(slug,))
+    if not exists:return jsonify({'error':'not_found'}),404
+    cookie_name=engagement_cookie_name('liked',slug)
+    if request.cookies.get(cookie_name)=='1':
+        row=engagement_row(slug)
+        return jsonify({'views':int(row['views']) if row else 0,'likes':int(row['likes']) if row else 0,'liked':True,'counted':False})
+    now=datetime.now(timezone.utc).isoformat()
+    if DB_URL:
+        sql="""INSERT INTO writeup_engagement(slug,views,likes,updated_at)
+                VALUES(%s,0,1,%s)
+                ON CONFLICT(slug) DO UPDATE
+                SET likes=writeup_engagement.likes+1,updated_at=EXCLUDED.updated_at"""
+        execute(sql,(slug,now))
+    else:
+        execute("INSERT OR IGNORE INTO writeup_engagement(slug,views,likes,updated_at) VALUES(?,?,?,?)",(slug,0,0,now))
+        execute("UPDATE writeup_engagement SET likes=likes+1,updated_at=? WHERE slug=?",(now,slug))
+    row=engagement_row(slug)
+    response=make_response(jsonify({'views':int(row['views']),'likes':int(row['likes']),'liked':True,'counted':True}))
+    response.set_cookie(cookie_name,'1',max_age=31536000,httponly=True,samesite='Lax',secure=app.config.get('SESSION_COOKIE_SECURE',False))
+    return response
+
 @app.post('/api/writeups')
 @admin_required
 def publish():
@@ -144,8 +224,12 @@ def publish():
 @admin_required
 def delete_writeup(slug):
     if not csrf_required(): return jsonify({'error':'csrf_failed'}),403
-    if DB_URL: execute('DELETE FROM writeups WHERE slug=%s',(slug,))
-    else: execute('DELETE FROM writeups WHERE slug=?',(slug,))
+    if DB_URL:
+        execute('DELETE FROM writeup_engagement WHERE slug=%s',(slug,))
+        execute('DELETE FROM writeups WHERE slug=%s',(slug,))
+    else:
+        execute('DELETE FROM writeup_engagement WHERE slug=?',(slug,))
+        execute('DELETE FROM writeups WHERE slug=?',(slug,))
     return jsonify({'ok':True})
 
 LOGIN_HTML='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login | Sardhon</title><link rel="stylesheet" href="/css/style.css"><style>body{min-height:100vh;display:grid;place-items:center}.login{width:min(430px,calc(100% - 32px));padding:28px;border:1px solid rgba(169,140,255,.2);border-radius:18px;background:rgba(10,9,16,.82);backdrop-filter:blur(18px)}.login h1{margin:0 0 8px}.login p{color:#aaa2bd}.login label{display:block;margin:16px 0;color:#aaa2bd;font-size:12px}.login input{width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid rgba(169,140,255,.2);border-radius:9px;background:#09080d;color:#fff}.login button{width:100%;padding:12px;margin-top:8px}.err{color:#ff8f9e;min-height:20px;font-size:12px}</style></head><body><main class="login"><p class="eyebrow">PRIVATE ADMIN</p><h1>Write-up Admin</h1><p>Sign in with your password and authenticator code.</p><form id="f"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><label>MFA code<input name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label><div class="err" id="e"></div><button class="action-btn primary" type="submit">Sign in</button></form></main><script>let csrf;fetch('/api/auth/csrf').then(r=>r.json()).then(x=>csrf=x.csrf);document.getElementById('f').onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(data)});if(r.ok)location.href='/editor.html';else document.getElementById('e').textContent=(await r.json()).error||'Login failed'};</script></body></html>'''
