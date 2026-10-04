@@ -57,7 +57,7 @@ const HOME_ATTACK_IMAGE_MAP = {
   SENSITIVEINFOEXPOSURE:"SENSITIVEINFOEXPOSURE.PNG", SECURITYMISCONFIGURATION:"SECURITYMISCONFIGURATION.PNG",
   INSECUREDESIGN:"INSECUREDESIGN.PNG"
 };
-const HOME_DEFAULT_LOGOS = [1,2].map(n=>`${HOME_DEFAULT_LOGO_BASE}DEFAULT_${n}.PNG`);
+const HOME_DEFAULT_LOGOS = [1,2,3,4,5].map(n=>`${HOME_DEFAULT_LOGO_BASE}DEFAULT_${n}.PNG`);
 function normalizeHomeAttack(value){
   return String(value||"").trim().toUpperCase().replace(/[^A-Z0-9]+/g,"");
 }
@@ -70,15 +70,12 @@ function firstHomeAttackType(item){
   if(/\bIDOR\b/.test(hay)) return "IDOR";
   return "";
 }
-function resolveHomeWriteupLogo(item){
+function resolveHomeWriteupLogo(item,index=0){
   const explicit=String(item?.logo||"").trim();
   if(explicit) return explicit;
   const attack=HOME_ATTACK_IMAGE_MAP[normalizeHomeAttack(firstHomeAttackType(item))];
   if(attack) return `${HOME_ATTACK_LOGO_BASE}${attack}`;
-  const key=slugifyWriteup(item?.slug||item?.title||"writeup");
-  let hash=0;
-  for(let i=0;i<key.length;i++) hash=((hash*31)+key.charCodeAt(i))>>>0;
-  return HOME_DEFAULT_LOGOS[hash%HOME_DEFAULT_LOGOS.length];
+  return HOME_DEFAULT_LOGOS[index % HOME_DEFAULT_LOGOS.length];
 }
 
 function allWriteups() {
@@ -127,8 +124,10 @@ function renderWriteups() {
     return (!q || text.includes(q)) && (!active || normalizeHomeTags(w.tags).some(t=>t.toLowerCase()===active));
   });
   if (isHome) list = list.slice(0, 3);
+  const catalogue = allWriteups();
   grid.innerHTML = list.map((w, index) => {
-    const logo = resolveHomeWriteupLogo(w);
+    const stableIndex = catalogue.findIndex(item => String(item.slug || "") === String(w.slug || ""));
+    const logo = resolveHomeWriteupLogo(w, stableIndex >= 0 ? stableIndex : index);
     const visual = logo
       ? `<div class="writeup-card-visual"><img src="${logo}" alt="${w.title || "Write-up"} logo" loading="lazy" onerror="this.closest('.writeup-card-visual')?.classList.add('logo-failed');this.remove()"></div>`
       : `<div class="writeup-card-visual writeup-card-placeholder"><span>${String(w.category || "SECURITY").slice(0,2).toUpperCase()}</span><i class="fa-solid fa-file-code"></i></div>`;
