@@ -496,7 +496,12 @@ async function showReader(item) {
   // The write-up artwork belongs inside the reader content, not in the
   // catalogue/list cards. Use the custom logo when one exists, otherwise
   // use the same attack/default artwork selected for the write-up.
-  const heroLogo = resolvePageWriteupLogo(item, 0);
+  // Use the write-up's stable position in the full catalogue when choosing
+  // a default cover. This prevents every reader page from falling back to
+  // DEFAULT_1 just because the reader itself is opened with index 0.
+  const catalogue = allItems();
+  const writeupIndex = catalogue.findIndex(w => String(w.slug || "") === String(item.slug || ""));
+  const heroLogo = resolvePageWriteupLogo(item, writeupIndex >= 0 ? writeupIndex : 0);
   if (heroLogo) {
     const heroImage = document.createElement("img");
     heroImage.className = "reader-writeup-image";
@@ -504,12 +509,13 @@ async function showReader(item) {
     heroImage.alt = `${item.title || "Write-up"} image`;
     heroImage.loading = "lazy";
 
-    const intro = article.querySelector(":scope > .intro, :scope > .published-intro");
     const heading = article.querySelector(":scope > h1, :scope > .published-title");
-    if (intro) {
-      intro.insertAdjacentElement("afterend", heroImage);
-    } else if (heading) {
+    const intro = article.querySelector(":scope > .intro, :scope > .published-intro");
+    if (heading) {
+      // Keep the artwork directly below the write-up title and aligned with it.
       heading.insertAdjacentElement("afterend", heroImage);
+    } else if (intro) {
+      intro.insertAdjacentElement("beforebegin", heroImage);
     } else {
       article.prepend(heroImage);
     }
