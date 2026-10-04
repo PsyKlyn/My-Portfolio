@@ -371,21 +371,45 @@ function showToast(message, type = "success") {
   toast._timer = setTimeout(() => toast.classList.remove("show"), 3200);
 }
 
-function renderDeleteButton(item){
-  const existing=document.getElementById('readerDeleteBtn');
-  existing?.remove();
-  if(!IS_ADMIN || !item?.live) return;
-  const btn=document.createElement('button');
-  btn.id='readerDeleteBtn';
-  btn.className='reader-delete-btn';
-  btn.type='button';
-  btn.title=`Delete ${item.title || 'write-up'}`;
-  btn.setAttribute('aria-label',`Delete ${item.title || 'write-up'}`);
-  btn.innerHTML='<i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>Delete</span>';
-  btn.addEventListener('click',()=>deleteSelectedWriteup(item,btn));
-  readerContent.appendChild(btn);
+function renderEngagement(item, stats={views:0,likes:0,liked:false}){
+  document.getElementById('readerEngagement')?.remove();
+  if(!item?.live)return;
+  const wrap=document.createElement('div');
+  wrap.id='readerEngagement';wrap.className='reader-engagement';
+  const like=document.createElement('button');
+  like.type='button';like.className=`reader-engagement-btn reader-like-btn${stats.liked?' liked':''}`;
+  like.innerHTML=`<i class="fa-${stats.liked?'solid':'regular'} fa-heart"></i><span class="engagement-count">${Number(stats.likes||0)}</span>`;
+  like.title=stats.liked?'You already liked this write-up':'Like this write-up';like.disabled=!!stats.liked;
+  const views=document.createElement('span');views.className='reader-engagement-stat reader-view-stat';
+  views.innerHTML=`<i class="fa-regular fa-eye"></i><span class="engagement-count">${Number(stats.views||0)}</span>`;
+  wrap.append(like,views);
+  if(IS_ADMIN){
+    const del=document.createElement('button');del.id='readerDeleteBtn';del.className='reader-engagement-btn reader-delete-btn';del.type='button';
+    del.innerHTML='<i class="fa-solid fa-trash-can"></i><span>Delete</span>';del.title=`Delete ${item.title||'write-up'}`;
+    del.addEventListener('click',()=>deleteSelectedWriteup(item,del));wrap.appendChild(del);
+  }
+  like.addEventListener('click',async()=>{
+    if(like.disabled)return;like.disabled=true;
+    try{
+      const r=await fetch(`/api/writeups/${encodeURIComponent(item.slug)}/like`,{method:'POST',credentials:'same-origin',cache:'no-store'});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not record your reaction.');
+      like.classList.add('liked');like.innerHTML=`<i class="fa-solid fa-heart"></i><span class="engagement-count">${Number(d.likes||0)}</span>`;
+      like.title='You already liked this write-up';views.querySelector('.engagement-count').textContent=Number(d.views||0);
+    }catch(e){like.disabled=false;showToast(e.message||'Could not record your reaction.','error');}
+  });
+  readerContent.appendChild(wrap);
 }
-
+async function loadEngagement(item){
+  try{
+    const r=await fetch(`/api/writeups/${encodeURIComponent(item.slug)}/view`,{method:'POST',credentials:'same-origin',cache:'no-store'});
+    if(r.ok)return await r.json();
+  }catch(e){console.error('view counter:',e);}
+  try{
+    const r=await fetch(`/api/writeups/${encodeURIComponent(item.slug)}/engagement`,{credentials:'same-origin',cache:'no-store'});
+    if(r.ok)return await r.json();
+  }catch(e){console.error('engagement:',e);}
+  return {views:0,likes:0,liked:false};
+}
 async function deleteSelectedWriteup(item,btn){
   if(!IS_ADMIN || !item?.live) return;
   const title=item.title || item.slug || 'this write-up';
@@ -411,7 +435,7 @@ async function deleteSelectedWriteup(item,btn){
     }
     const data=await response.json().catch(()=>({}));
     if(response.status===401){
-      IS_ADMIN=false; renderDeleteButton(item);
+      IS_ADMIN=false; document.getElementById('readerEngagement')?.remove();
       throw new Error('Your admin session has expired.');
     }
     if(!response.ok) throw new Error(data.error || `Delete failed (${response.status})`);
@@ -421,7 +445,7 @@ async function deleteSelectedWriteup(item,btn){
       const local=publishedItems().filter(w => (w.slug || slugify(w.title)) !== item.slug);
       localStorage.setItem(PUBLISHED_KEY,JSON.stringify(local));
     }catch{}
-    renderDeleteButton(null);
+    document.getElementById('readerEngagement')?.remove();
     showToast(`“${title}” deleted successfully.`);
     renderFilters();
     renderGrid();
@@ -474,7 +498,8 @@ async function showReader(item) {
   article.innerHTML = sourceRoot.innerHTML;
   readerBody.appendChild(article);
   bindCopyButtons(article);
-  renderDeleteButton(item);
+  const engagement=await loadEngagement(item);
+  renderEngagement(item,engagement);
   document.title = `${item.title || "Write-up"} | Sardhon`;
 }
 function setUrl(slug) {
